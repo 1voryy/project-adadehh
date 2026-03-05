@@ -3,38 +3,275 @@
 <head>
 <meta charset="UTF-8">
 <title>project adadeh 💕</title>
+
 <style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #ffb6d9, #ffe3f2);
-    text-align: center;
-    overflow: hidden;
+body{
+margin:0;
+font-family:Arial, sans-serif;
+background:linear-gradient(135deg,#ffb6d9,#ffe3f2);
+text-align:center;
+overflow:hidden;
 }
 
-.screen { display: none; margin-top: 120px; }
-.active { display: block; }
+.screen{display:none;margin-top:120px;}
+.active{display:block;}
 
-button {
-    padding: 12px 25px;
-    font-size: 18px;
-    border: none;
-    border-radius: 15px;
-    background: hotpink;
-    color: white;
-    cursor: pointer;
+button{
+padding:12px 25px;
+font-size:18px;
+border:none;
+border-radius:15px;
+background:hotpink;
+color:white;
+cursor:pointer;
 }
 
-.card {
-    background: white;
-    width: 420px;
-    margin: auto;
-    padding: 30px;
-    border-radius: 20px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+.card{
+background:white;
+width:420px;
+margin:auto;
+padding:30px;
+border-radius:20px;
+box-shadow:0 15px 35px rgba(0,0,0,0.2);
 }
 
-.fade-text {
+.fade-text{
+opacity:0;
+transition:opacity 2s ease;
+min-height:60px;
+margin-bottom:15px;
+font-style:italic;
+}
+
+.fade-text.show{
+opacity:1;
+}
+
+.countdown-box{
+margin-top:20px;
+font-weight:bold;
+font-size:18px;
+}
+
+.heart{
+position:absolute;
+color:red;
+font-size:20px;
+animation:fall linear infinite;
+}
+
+@keyframes fall{
+0%{top:-10%;}
+100%{top:110%;}
+}
+</style>
+</head>
+
+<body>
+
+<div id="locked" class="screen active">
+<h1>⏳ Belum waktunya</h1>
+<p>Terbuka dalam:</p>
+<div id="countdown" class="countdown-box"></div>
+</div>
+
+<div id="opening" class="screen">
+<h1>⚠️ WARNING ⚠️</h1>
+<p>Website ini mengandung kadar bucin berlebihan.</p>
+<button onclick="mulai()">Tekan aku plis</button>
+</div>
+
+<div id="main" class="screen">
+<div class="card">
+<h2>Happy Anniversary sayang 💖</h2>
+<p id="longText" class="fade-text"></p>
+<p id="bulanText"></p>
+<p id="romantis"></p>
+</div>
+</div>
+
+<div id="expired" class="screen">
+<h1>💔 Sampai jumpa 💔</h1>
+<p>Halaman ini sudah ditutup selama 24 jam, dan akan terbuka lagi setiap tanggal 6.</p>
+</div>
+
+<script>
+
+const startDate = new Date(2026,1,6)
+let longIndex = 0
+let eventLocked = false
+
+const longMessages = [
+"Sejak hari itu, hidupku jadi lebih berarti karena ada kamu.",
+"Terima kasih sudah memilih aku setiap hari sayang.",
+"Aku nggak janji selalu benar, tapi aku janji selalu belajar buat kita.",
+"Setiap tanggal 6 itu bukti kita masih saling memilih.",
+"I love you so much."
+]
+
+function showScreen(id){
+document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"))
+document.getElementById(id).classList.add("active")
+}
+
+function formatTime(diff){
+
+const hours=Math.floor(diff/(1000*60*60))
+const minutes=Math.floor((diff/(1000*60))%60)
+const seconds=Math.floor((diff/1000)%60)
+
+return hours+" jam "+minutes+" menit "+seconds+" detik"
+}
+
+function getCycleTimes(){
+
+const now=new Date()
+
+let open=new Date(now.getFullYear(),now.getMonth(),6,0,0,0)
+
+if(now.getDate()>6){
+open.setMonth(open.getMonth()+1)
+}
+
+let close=new Date(open)
+close.setDate(close.getDate()+1)
+
+let expiredEnd=new Date(close)
+expiredEnd.setDate(expiredEnd.getDate()+1)
+
+return {open,close,expiredEnd}
+
+}
+
+function updateAccess(){
+
+if(eventLocked) return
+
+const now=new Date()
+const cycle=getCycleTimes()
+
+const open=cycle.open
+const close=cycle.close
+const expiredEnd=cycle.expiredEnd
+
+if(now<open){
+
+showScreen("locked")
+document.getElementById("countdown").innerText=formatTime(open-now)
+
+}
+
+else if(now>=open && now<close){
+
+showScreen("opening")
+eventLocked=true
+
+}
+
+else if(now>=close && now<expiredEnd){
+
+showScreen("expired")
+eventLocked=true
+
+}
+
+else{
+
+showScreen("locked")
+
+}
+
+}
+
+setInterval(updateAccess,1000)
+updateAccess()
+
+function mulai(){
+
+showScreen("main")
+
+startLongTextAnimation()
+
+setInterval(updateMain,1000)
+
+}
+
+function updateMain(){
+
+const now=new Date()
+
+let months=
+(now.getFullYear()-startDate.getFullYear())*12+
+(now.getMonth()-startDate.getMonth())
+
+if(now.getDate()<6) months--
+
+if(months<0) months=0
+
+document.getElementById("bulanText").innerText=
+"Kita sudah bersama selama "+months+" bulan 💕"
+
+const kata=[
+"Kita masih di sini.",
+"Masih sama orang yang sama.",
+"Dan masih saling memilih."
+]
+
+document.getElementById("romantis").innerText=
+kata[Math.floor(Math.random()*kata.length)]
+
+}
+
+function startLongTextAnimation(){
+
+const el=document.getElementById("longText")
+
+function changeText(){
+
+el.classList.remove("show")
+
+setTimeout(()=>{
+
+el.innerText=longMessages[longIndex]
+
+el.classList.add("show")
+
+longIndex=(longIndex+1)%longMessages.length
+
+},2000)
+
+}
+
+changeText()
+
+setInterval(changeText,6000)
+
+}
+
+function createHeart(){
+
+const heart=document.createElement("div")
+
+heart.classList.add("heart")
+
+heart.innerText="❤️"
+
+heart.style.left=Math.random()*100+"vw"
+
+heart.style.animationDuration=(3+Math.random()*5)+"s"
+
+document.body.appendChild(heart)
+
+setTimeout(()=>heart.remove(),8000)
+
+}
+
+setInterval(createHeart,500)
+
+</script>
+
+</body>
+</html>.fade-text {
     opacity: 0;
     transition: opacity 2s ease;
     min-height: 60px;
@@ -216,4 +453,5 @@ setInterval(createHeart, 500);
 </script>
 
 </body>
+
 </html>
